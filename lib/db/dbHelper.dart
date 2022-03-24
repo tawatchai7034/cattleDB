@@ -34,38 +34,14 @@ class CattleDB {
     final integerType = 'INTEGER NOT NULL';
     final doubleType = 'REAL NOT NULL';
 
-    await db.execute(''' CREATE TABLE $tableCatPro (
-          ${CatProFields.id} $integerType,
-          ${CatProFields.name} $textType,
-          ${CatProFields.gender} $boolType,
-          ${CatProFields.species} $textType,
-    )''');
+    await db.execute('''CREATE TABLE $tableCatPro (${CatProFields.id} $idType,${CatProFields.name} $textType,${CatProFields.gender} $boolType,${CatProFields.species} $textType)''');
 
-    await db.execute(''' CREATE TABLE $tableCatTime (
-          ${CatTimeFields.id} $integerType,
-          ${CatTimeFields.idCatPro} $integerType,
-          ${CatTimeFields.bodyLenght} $doubleType,
-          ${CatTimeFields.heartGirth} $doubleType,
-          ${CatTimeFields.hearLenghtSide} $doubleType,
-          ${CatTimeFields.hearLenghtRear} $doubleType,
-          ${CatTimeFields.hearLenghtTop} $doubleType,
-          ${CatTimeFields.pixelReference} $doubleType,
-          ${CatTimeFields.distanceReference} $doubleType,
-          ${CatTimeFields.imageSide} $integerType,
-          ${CatTimeFields.imageRear} $integerType,
-          ${CatTimeFields.imageTop} $integerType,
-          ${CatTimeFields.date} $textType,
-          ${CatTimeFields.note} $textType,
-    )''');
+    await db.execute('''CREATE TABLE $tableCatTime (${CatTimeFields.id} $idType,${CatTimeFields.idCatPro} $integerType,${CatTimeFields.bodyLenght} $doubleType,${CatTimeFields.heartGirth} $doubleType,${CatTimeFields.hearLenghtSide} $doubleType,${CatTimeFields.hearLenghtRear} $doubleType,${CatTimeFields.hearLenghtTop} $doubleType,${CatTimeFields.pixelReference} $doubleType,${CatTimeFields.distanceReference} $doubleType,${CatTimeFields.imageSide} $integerType,${CatTimeFields.imageRear} $integerType,${CatTimeFields.imageTop} $integerType,${CatTimeFields.date} $textType,${CatTimeFields.note} $textType,FOREIGN KEY(${CatTimeFields.idCatPro}) REFERENCES $tableCatPro(${CatProFields.id}))''');
 
-    await db.execute(''' CREATE TABLE $tableCatImage (
-          ${CatImageFields.id} $integerType,
-          ${CatImageFields.idCatPro} $integerType,
-          ${CatImageFields.idCatTime} $integerType,
-          ${CatImageFields.imagePath} $textType,
-    )''');
+    await db.execute('''CREATE TABLE $tableCatImage (${CatImageFields.id} $idType,${CatImageFields.idCatPro} $integerType,${CatImageFields.idCatTime} $integerType,${CatImageFields.imagePath} $textType,FOREIGN KEY(${CatImageFields.idCatPro}) REFERENCES $tableCatTime(${CatTimeFields.idCatPro}),FOREIGN KEY(${CatImageFields.idCatTime}) REFERENCES $tableCatTime(${CatTimeFields.id}))''');
   }
 
+// Insert data to data base
   Future<CatPro> createCatPro(CatPro catPro) async {
     final db = await instance.database;
 
@@ -86,8 +62,10 @@ class CattleDB {
     final id = await db.insert(tableCatTime, catImage.toJson());
     return catImage.copy(id: id);
   }
+// Insert data to database
 
-    Future<List<CatPro>> readAllCatPro() async {
+// Query data
+  Future<List<CatPro>> readAllCatPro() async {
     final db = await instance.database;
 
     final orderBy = '${CatProFields.species} ASC';
@@ -97,6 +75,23 @@ class CattleDB {
     final result = await db.query(tableCatPro, orderBy: orderBy);
 
     return result.map((json) => CatPro.fromJson(json)).toList();
+  }
+
+    Future<CatPro> readCatPro(int id) async {
+    final db = await instance.database;
+
+    final maps = await db.query(
+      tableCatPro,
+      columns: CatProFields.values,
+      where: '${CatProFields.id} = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isNotEmpty) {
+      return CatPro.fromJson(maps.first);
+    } else {
+      throw Exception('ID $id not found');
+    }
   }
 
   Future<List<CatTime>> readAllCatTime() async {
@@ -111,4 +106,28 @@ class CattleDB {
     return result.map((json) => CatTime.fromJson(json)).toList();
   }
 
+  
+    Future<CatTime> readCatTime(int id) async {
+    final db = await instance.database;
+
+    final maps = await db.query(
+      tableCatPro,
+      columns: CatTimeFields.values,
+      where: '${CatTimeFields.id} = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isNotEmpty) {
+      return CatTime.fromJson(maps.first);
+    } else {
+      throw Exception('ID $id not found');
+    }
+  }
+  // Query data
+
+  Future close() async {
+    final db = await instance.database;
+
+    db.close();
+  }
 }
