@@ -34,11 +34,14 @@ class CattleDB {
     final integerType = 'INTEGER NOT NULL';
     final doubleType = 'REAL NOT NULL';
 
-    await db.execute('''CREATE TABLE $tableCatPro (${CatProFields.id} $idType,${CatProFields.name} $textType,${CatProFields.gender} $boolType,${CatProFields.species} $textType)''');
+    await db.execute(
+        '''CREATE TABLE $tableCatPro (${CatProFields.id} $idType,${CatProFields.name} $textType,${CatProFields.gender} $boolType,${CatProFields.species} $textType)''');
 
-    await db.execute('''CREATE TABLE $tableCatTime (${CatTimeFields.id} $idType,${CatTimeFields.idCatPro} $integerType,${CatTimeFields.bodyLenght} $doubleType,${CatTimeFields.heartGirth} $doubleType,${CatTimeFields.hearLenghtSide} $doubleType,${CatTimeFields.hearLenghtRear} $doubleType,${CatTimeFields.hearLenghtTop} $doubleType,${CatTimeFields.pixelReference} $doubleType,${CatTimeFields.distanceReference} $doubleType,${CatTimeFields.imageSide} $integerType,${CatTimeFields.imageRear} $integerType,${CatTimeFields.imageTop} $integerType,${CatTimeFields.date} $textType,${CatTimeFields.note} $textType,FOREIGN KEY(${CatTimeFields.idCatPro}) REFERENCES $tableCatPro(${CatProFields.id}))''');
+    await db.execute(
+        '''CREATE TABLE $tableCatTime (${CatTimeFields.id} $idType,${CatTimeFields.idCatPro} $integerType,${CatTimeFields.bodyLenght} $doubleType,${CatTimeFields.heartGirth} $doubleType,${CatTimeFields.hearLenghtSide} $doubleType,${CatTimeFields.hearLenghtRear} $doubleType,${CatTimeFields.hearLenghtTop} $doubleType,${CatTimeFields.pixelReference} $doubleType,${CatTimeFields.distanceReference} $doubleType,${CatTimeFields.imageSide} $integerType,${CatTimeFields.imageRear} $integerType,${CatTimeFields.imageTop} $integerType,${CatTimeFields.date} $textType,${CatTimeFields.note} $textType,FOREIGN KEY(${CatTimeFields.idCatPro}) REFERENCES $tableCatPro(${CatProFields.id}))''');
 
-    await db.execute('''CREATE TABLE $tableCatImage (${CatImageFields.id} $idType,${CatImageFields.idCatPro} $integerType,${CatImageFields.idCatTime} $integerType,${CatImageFields.imagePath} $textType,FOREIGN KEY(${CatImageFields.idCatPro}) REFERENCES $tableCatTime(${CatTimeFields.idCatPro}),FOREIGN KEY(${CatImageFields.idCatTime}) REFERENCES $tableCatTime(${CatTimeFields.id}))''');
+    await db.execute(
+        '''CREATE TABLE $tableCatImage (${CatImageFields.id} $idType,${CatImageFields.idCatPro} $integerType,${CatImageFields.idCatTime} $integerType,${CatImageFields.imagePath} $textType,FOREIGN KEY(${CatImageFields.idCatPro}) REFERENCES $tableCatTime(${CatTimeFields.idCatPro}),FOREIGN KEY(${CatImageFields.idCatTime}) REFERENCES $tableCatTime(${CatTimeFields.id}))''');
   }
 
 // Insert data to data base
@@ -73,11 +76,12 @@ class CattleDB {
     //     await db.rawQuery('SELECT * FROM $tableNotes ORDER BY $orderBy');
 
     final result = await db.query(tableCatPro, orderBy: orderBy);
+    await db.close();
 
     return result.map((json) => CatPro.fromJson(json)).toList();
   }
 
-    Future<CatPro> readCatPro(int id) async {
+  Future<CatPro> readCatPro(int id) async {
     final db = await instance.database;
 
     final maps = await db.query(
@@ -86,6 +90,7 @@ class CattleDB {
       where: '${CatProFields.id} = ?',
       whereArgs: [id],
     );
+    await db.close();
 
     if (maps.isNotEmpty) {
       return CatPro.fromJson(maps.first);
@@ -106,8 +111,7 @@ class CattleDB {
     return result.map((json) => CatTime.fromJson(json)).toList();
   }
 
-  
-    Future<CatTime> readCatTime(int id) async {
+  Future<CatTime> readCatTime(int id) async {
     final db = await instance.database;
 
     final maps = await db.query(
@@ -125,6 +129,33 @@ class CattleDB {
   }
   // Query data
 
+  // Update
+  Future<int> updateCatPro(CatPro catPro) async {
+    final db = await instance.database;
+
+    return db.update(
+      tableCatPro,
+      catPro.toJson(),
+      where: '${CatProFields.id} = ?',
+      whereArgs: [catPro.id],
+    );
+  }
+
+  // Update
+
+  // delete
+  Future<int> deleteCatPro(int id) async {
+    final db = await instance.database;
+
+    return await db.delete(
+      tableCatPro,
+      where: '${CatProFields.id} = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // delete
+  
   Future close() async {
     final db = await instance.database;
 

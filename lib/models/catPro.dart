@@ -45,4 +45,5 @@ class CatPro {
         CatProFields.gender: gender ? 1 : 0,
         CatProFields.species: species,
       };
+    
 }
