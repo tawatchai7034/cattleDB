@@ -1,6 +1,5 @@
 import 'package:cattle_db/db/dbHelper.dart';
 import 'package:cattle_db/models/catPro.dart';
-import 'package:cattle_db/screens/catTime_screen.dart';
 import 'package:cattle_db/widget/catPro_dialog.dart';
 import 'package:flutter/material.dart';
 
@@ -65,12 +64,12 @@ class _CatProScreenState extends State<CatProScreen> {
                               //             )),
                               //     (Route<dynamic> route) => false);
 
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => CatTimeScreen(
-                                            catProID: catPros[index].id!,
-                                          )));
+                              // Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //         builder: (context) => CatTimeScreen(
+                              //               catProID: catPros[index].id!,
+                              //             )));
                             },
                             child: Card(
                               child: Padding(
